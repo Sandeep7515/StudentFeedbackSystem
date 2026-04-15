@@ -1,0 +1,36 @@
+# Compiled Java files
+*.class
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Tomcat folders (VERY IMPORTANT)
+work/
+temp/
+logs/
+
+# Build files
+*.war
+*.ear
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+
+# Database files (if any)
+*.db
+
+# Ignore compiled classes inside WEB-INF
+WEB-INF/classes/
+
+# Optional: ignore jar (if you want)
+# WEB-INF/lib/*.jar
