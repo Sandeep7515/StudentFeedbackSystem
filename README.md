@@ -3,43 +3,26 @@
 ## 📌 Project Overview
 
 The **Student Feedback System** is a web-based application built using **JSP, Servlets, JDBC, and Oracle Database**.
-It allows students to register, log in, and submit feedback on faculty and subjects in a structured manner.
-
-This system replaces manual feedback collection with a **digital, efficient, and secure platform**.
+It allows students to register, log in, and submit feedback on faculty and subjects.
 
 ---
 
 ## 🚀 Features
 
-### 👤 Student Module
-
-* Register new account
-* Secure login using register number & password
-* Session-based authentication
-* Logout functionality
-
-### 📝 Feedback Module
-
-* Submit feedback for subjects
-* 15 structured rating questions (1–5 scale)
-* Comments section
-* Feedback stored in database
-
-### ⚙️ Backend
-
-* Java Servlets for request handling
-* JDBC for database connectivity
-* Oracle Database integration
+* Student Registration & Login
+* Session Management
+* Feedback Submission (15 Questions)
+* Logout System
+* Database Integration using JDBC
 
 ---
 
 ## 🧱 Technologies Used
 
-* **Frontend:** HTML, CSS, JSP
-* **Backend:** Java Servlets
-* **Database:** Oracle Database
-* **Server:** Apache Tomcat
-* **Connectivity:** JDBC
+* Frontend: HTML, CSS, JSP
+* Backend: Java Servlets
+* Database: Oracle Database
+* Server: Apache Tomcat
 
 ---
 
@@ -47,7 +30,6 @@ This system replaces manual feedback collection with a **digital, efficient, and
 
 ```text
 StudentFeedbackSystem/
-│
 ├── login.jsp
 ├── register.jsp
 ├── dashboard.jsp
@@ -55,74 +37,139 @@ StudentFeedbackSystem/
 ├── logout.jsp
 ├── css/
 │   └── style.css
-│
 └── WEB-INF/
     ├── web.xml
     ├── classes/
-    │   ├── DBConnection.class
-    │   ├── RegisterServlet.class
-    │   ├── LoginServlet.class
-    │   ├── FeedbackServlet.class
-    │
     └── lib/
         └── ojdbc8.jar
 ```
 
 ---
 
-## 🗄️ Database Tables
+# 🗄️ Database Setup
 
-### 1. Students
+## 👤 Students Table
 
-* reg_no (Primary Key)
-* name
-* password
-* year
-* semester
-* branch
-* created_at
+```sql
+CREATE TABLE students (
+    reg_no VARCHAR2(20) PRIMARY KEY,
+    name VARCHAR2(100),
+    password VARCHAR2(100),
+    year NUMBER(1),
+    semester NUMBER(1),
+    branch VARCHAR2(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
 
-### 2. Faculty
+---
 
-* faculty_id (Primary Key)
-* name
-* department
+## 👨‍🏫 Faculty Table
 
-### 3. Subjects
+```sql
+CREATE TABLE faculty (
+    faculty_id NUMBER PRIMARY KEY,
+    name VARCHAR2(100),
+    department VARCHAR2(50)
+);
+```
 
-* subject_id (Primary Key)
-* subject_name
-* faculty_id (Foreign Key)
+### Sequence & Trigger
 
-### 4. Feedback
+```sql
+CREATE SEQUENCE faculty_seq START WITH 1 INCREMENT BY 1;
 
-* id (Primary Key)
-* reg_no (Foreign Key)
-* subject_id (Foreign Key)
-* q1–q15 (ratings)
-* comments
-* submitted_at
+CREATE OR REPLACE TRIGGER faculty_trigger
+BEFORE INSERT ON faculty
+FOR EACH ROW
+BEGIN
+    IF :NEW.faculty_id IS NULL THEN
+        SELECT faculty_seq.NEXTVAL INTO :NEW.faculty_id FROM dual;
+    END IF;
+END;
+/
+```
+
+---
+
+## 📚 Subjects Table
+
+```sql
+CREATE TABLE subjects (
+    subject_id NUMBER PRIMARY KEY,
+    subject_name VARCHAR2(100),
+    faculty_id NUMBER,
+    FOREIGN KEY (faculty_id) REFERENCES faculty(faculty_id)
+);
+```
+
+### Sequence & Trigger
+
+```sql
+CREATE SEQUENCE subjects_seq START WITH 1 INCREMENT BY 1;
+
+CREATE OR REPLACE TRIGGER subjects_trigger
+BEFORE INSERT ON subjects
+FOR EACH ROW
+BEGIN
+    IF :NEW.subject_id IS NULL THEN
+        SELECT subjects_seq.NEXTVAL INTO :NEW.subject_id FROM dual;
+    END IF;
+END;
+/
+```
+
+---
+
+## 📝 Feedback Table
+
+```sql
+CREATE TABLE feedback (
+    id NUMBER PRIMARY KEY,
+    reg_no VARCHAR2(20),
+    subject_id NUMBER,
+
+    q1 NUMBER(1), q2 NUMBER(1), q3 NUMBER(1), q4 NUMBER(1), q5 NUMBER(1),
+    q6 NUMBER(1), q7 NUMBER(1), q8 NUMBER(1), q9 NUMBER(1), q10 NUMBER(1),
+    q11 NUMBER(1), q12 NUMBER(1), q13 NUMBER(1), q14 NUMBER(1), q15 NUMBER(1),
+
+    comments VARCHAR2(500),
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (reg_no) REFERENCES students(reg_no),
+    FOREIGN KEY (subject_id) REFERENCES subjects(subject_id)
+);
+```
+
+### Sequence & Trigger
+
+```sql
+CREATE SEQUENCE feedback_seq START WITH 1 INCREMENT BY 1;
+
+CREATE OR REPLACE TRIGGER feedback_trigger
+BEFORE INSERT ON feedback
+FOR EACH ROW
+BEGIN
+    IF :NEW.id IS NULL THEN
+        SELECT feedback_seq.NEXTVAL INTO :NEW.id FROM dual;
+    END IF;
+END;
+/
+```
 
 ---
 
 ## ⚙️ Setup Instructions
 
-### 1. Install Requirements
+### 1. Install
 
-* Java JDK (8 or above)
+* Java JDK
 * Oracle Database
 * Apache Tomcat
 
 ---
 
-### 2. Configure Database
-
-* Create all tables using SQL scripts
-* Insert sample faculty and subjects
-
----
-
-### 3. Add JDBC Driver
+### 2. Add JDBC Driver
 
 Copy:
 
@@ -132,35 +179,25 @@ ojdbc8.jar → WEB-INF/lib/
 
 ---
 
-### 4. Compile Servlets
+### 3. Compile Servlets
 
 ```
 javac -cp ".;tomcat/lib/servlet-api.jar;WEB-INF/lib/ojdbc8.jar" *.java
 ```
 
-Move compiled `.class` files to:
-
-```
-WEB-INF/classes/
-```
-
 ---
 
-### 5. Deploy Project
+### 4. Deploy
 
-Copy project folder into:
+Copy project to:
 
 ```
 tomcat/webapps/
 ```
 
-Start Tomcat server.
-
 ---
 
-### 6. Run Application
-
-Open browser:
+### 5. Run
 
 ```
 http://localhost:9000/StudentFeedbackSystem/login.jsp
@@ -170,35 +207,16 @@ http://localhost:9000/StudentFeedbackSystem/login.jsp
 
 ## 🔄 Application Flow
 
-1. User registers
-2. User logs in
-3. Redirect to dashboard
-4. Submit feedback
-5. Data stored in database
-6. Logout
-
----
-
-## 🔐 Security Notes
-
-* Session-based authentication
-* Input validation recommended
-* Password encryption can be added (future enhancement)
+1. Register
+2. Login
+3. Dashboard
+4. Submit Feedback
+5. Logout
 
 ---
 
 ## 👨‍💻 Author
 
-Developed as a **Full Stack Java Project using JSP & Servlets**
-
----
-
-## ⭐ Conclusion
-
-This project demonstrates:
-
-* Full-stack Java web development
-* Database integration using JDBC
-* Real-world academic system design
+Student Feedback System using JSP, Servlets & Oracle DB
 
 ---
